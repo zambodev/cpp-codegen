@@ -217,6 +217,15 @@ template <std::size_t N, std::array<Block, N> blocks> consteval auto parse_types
     return types;
 }
 
+template <typename T> constexpr void xray()
+{
+    template for (constexpr auto member : std::define_static_array(
+                      std::meta::nonstatic_data_members_of(^^T, std::meta::access_context::current())))
+    {
+        std::println("{}", std::meta::identifier_of(member));
+    }
+}
+
 int main()
 {
     constexpr auto n = count_block(datatype);
@@ -233,9 +242,15 @@ int main()
         std::println("----------------\n");
     }
 
-    constexpr auto types = parse_types<n, blocks>();
+    static constexpr auto types = parse_types<n, blocks>();
 
     using T1 = typename[:types[0]:];
+
+    template for (constexpr auto type : types)
+    {
+        xray<typename[:type:]>();
+        std::println("");
+    }
 
     T1 t1{2, 2.0};
 
