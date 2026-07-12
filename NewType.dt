@@ -1,0 +1,17 @@
+[
+    first: int
+    second: float
+]
+
+[
+    gino: int
+    pino: bool
+    pierino: float
+]
+
+[
+    lato1: int
+    lato2: int
+    lato3: int
+    lato4: int
+]

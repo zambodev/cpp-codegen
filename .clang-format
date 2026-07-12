@@ -1,0 +1,4 @@
+# Visual Studio default C++ formatting (clang-format "Microsoft" base style).
+# Verifiable: clang-format --dry-run --Werror main.cpp  (clang-format >= 14).
+
+BasedOnStyle: Microsoft
