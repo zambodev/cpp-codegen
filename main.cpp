@@ -115,11 +115,25 @@ template <std::size_t N> consteval auto parse(const std::string_view &data) -> s
 
 consteval std::meta::info sv_to_mi(std::string_view type)
 {
-    if (type == "int")
+    if (type == "i8")
+        return ^^signed char;
+    if (type == "i16")
+        return ^^short;
+    if (type == "i32")
         return ^^int;
-    if (type == "float")
+    if (type == "i64")
+        return ^^long long;
+    if (type == "u8")
+        return ^^unsigned char;
+    if (type == "u16")
+        return ^^unsigned short;
+    if (type == "u32")
+        return ^^unsigned int;
+    if (type == "u64")
+        return ^^unsigned long long;
+    if (type == "f32")
         return ^^float;
-    if (type == "double")
+    if (type == "f64")
         return ^^double;
     if (type == "bool")
         return ^^bool;

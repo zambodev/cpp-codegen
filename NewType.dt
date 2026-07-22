@@ -1,17 +1,17 @@
 [
-    first: int
-    second: float
+    first: i32
+    second: f32
 ]
 
 [
-    gino: int
+    gino: i32
     pino: bool
-    pierino: float
+    pierino: f32
 ]
 
 [
-    lato1: int
-    lato2: int
-    lato3: int
-    lato4: int
+    lato1: i32
+    lato2: i32
+    lato3: i32
+    lato4: i32
 ]
