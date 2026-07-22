@@ -41,69 +41,9 @@ struct consteval_error : std::exception
     }
 };
 
-template <unsigned long Size> struct FixedString
-{
-    char c_str[Size] = {0};
-
-    constexpr FixedString() : c_str{0} {};
-    constexpr FixedString(const char *str)
-    {
-        unsigned long idx = 0;
-        const char *p = str;
-
-        while (*p != '\0' && idx < Size)
-        {
-            c_str[idx] = *p;
-            ++idx;
-            ++p;
-        }
-    }
-
-    constexpr FixedString(const std::string_view &str)
-    {
-        unsigned long idx = 0;
-        const char *p = str.data();
-
-        while (idx < str.size() && idx < Size)
-        {
-            c_str[idx] = *p;
-            ++idx;
-            ++p;
-        }
-    }
-
-    constexpr FixedString(const FixedString<Size> &str)
-    {
-        for (unsigned long i = 0; i < Size; ++i)
-            c_str[i] = str.c_str[i];
-    }
-
-    constexpr FixedString(FixedString<Size> &&str) noexcept
-    {
-        for (unsigned long i = 0; i < Size; ++i)
-            c_str[i] = str.c_str[i];
-    }
-
-    constexpr ~FixedString()
-    {
-    }
-
-    constexpr operator std::string_view() const
-    {
-        return {c_str, Size - 1};
-    }
-
-    constexpr FixedString &operator=(const FixedString<Size> &str)
-    {
-        for (unsigned long i = 0; i < Size; ++i)
-            c_str[i] = str.c_str[i];
-        return *this;
-    }
-};
-
 struct Block
 {
-    std::array<std::pair<FixedString<FIXED_STRING_SIZE>, FixedString<FIXED_STRING_SIZE>>, MAX_BLOCK_FIELDS> fields{};
+    std::array<std::pair<const char *, const char *>, MAX_BLOCK_FIELDS> fields{};
     std::size_t count{0};
 };
 
@@ -147,8 +87,7 @@ consteval Block parse_block(std::size_t &idx)
                 std::string_view type = (ts == std::string_view::npos) ? std::string_view{} : line.substr(ts);
                 std::size_t type_end = type.find_last_not_of(" \t");
                 type = (type_end == std::string_view::npos) ? std::string_view{} : type.substr(0, type_end + 1);
-                block.fields.at(block.count++) = {FixedString<FIXED_STRING_SIZE>(name),
-                                                  FixedString<FIXED_STRING_SIZE>(type)};
+                block.fields.at(block.count++) = {define_static_string(name), define_static_string(type)};
             }
             start = idx + 1;
         }
@@ -198,8 +137,8 @@ template <Block block> consteval std::meta::info block_to_mi()
         std::array<std::meta::info, block.count> temp_types{};
         for (std::size_t i = 0; i < block.count; ++i)
         {
-            temp_types.at(i) = std::meta::data_member_spec(sv_to_mi(block.fields[i].second.c_str),
-                                                           {.name = block.fields[i].first.c_str});
+            temp_types.at(i) =
+                std::meta::data_member_spec(sv_to_mi(block.fields[i].second), {.name = block.fields[i].first});
         }
 
         std::meta::define_aggregate(^^Temp, temp_types);
@@ -237,7 +176,7 @@ int main()
         std::println("----------------");
         for (std::size_t f = 0; f < blocks[i].count; ++f)
         {
-            std::println("{} {}", blocks[i].fields[f].first.c_str, blocks[i].fields[f].second.c_str);
+            std::println("{} {}", blocks[i].fields[f].first, blocks[i].fields[f].second);
         }
         std::println("----------------\n");
     }
