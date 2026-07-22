@@ -5,7 +5,6 @@
 #include <stdexcept>
 #include <utility>
 
-constexpr std::size_t FIXED_STRING_SIZE = 32u;
 constexpr std::size_t MAX_BLOCK_FIELDS = 16u;
 
 struct consteval_error : std::exception
