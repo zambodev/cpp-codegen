@@ -184,28 +184,32 @@ int main()
     constexpr auto n = count_block(datatype);
     constexpr auto blocks = parse<n>(datatype);
 
+    std::println("\nParsed types:");
+    std::println("--------");
     for (std::size_t i = 0; i < n; ++i)
     {
-        std::println("Block {}", i);
-        std::println("----------------");
+        std::println("Block {}:", i);
         for (std::size_t f = 0; f < blocks[i].count; ++f)
         {
             std::println("{} {}", blocks[i].fields[f].first, blocks[i].fields[f].second);
         }
-        std::println("----------------\n");
+        std::println("--------");
     }
 
     static constexpr auto types = parse_types<n, blocks>();
 
     using T1 = typename[:types[0]:];
 
+    std::println("\nGenerated types:");
     template for (constexpr auto type : types)
     {
+        std::println("--------");
         xray<typename[:type:]>();
-        std::println("");
     }
+    std::println("--------");
 
     T1 t1{2, 2.0};
 
+    std::println("\nObject of type Block 0:");
     std::println("{} {}", t1.first, t1.second);
 }
