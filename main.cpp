@@ -174,7 +174,8 @@ template <typename T> constexpr void xray()
     template for (constexpr auto member : std::define_static_array(
                       std::meta::nonstatic_data_members_of(^^T, std::meta::access_context::current())))
     {
-        std::println("{}", std::meta::identifier_of(member));
+        std::println("{}: {}", std::meta::identifier_of(member),
+                     std::meta::display_string_of(std::meta::type_of(member)));
     }
 }
 
