@@ -50,7 +50,7 @@ constexpr const char datatype[] = {
 #embed "NewType.dt"
     , 0};
 
-consteval std::size_t count_block(const std::string_view &data)
+template <std::size_t Size> consteval std::size_t count_block(const char (&data)[Size])
 {
     std::size_t n{0};
 
@@ -61,19 +61,39 @@ consteval std::size_t count_block(const std::string_view &data)
     return n;
 }
 
-consteval Block parse_block(std::size_t &idx)
+template <std::size_t Size> consteval void validate_brackets(const char (&data)[Size])
+{
+    std::size_t depth{0};
+
+    for (char c : data)
+    {
+        if (c == '[')
+            ++depth;
+        else if (c == ']')
+        {
+            if (depth == 0)
+                throw consteval_error("validate_brackets: unmatched ']'");
+            --depth;
+        }
+    }
+
+    if (depth != 0)
+        throw consteval_error("validate_brackets: unmatched '['");
+}
+
+template <std::size_t Size> consteval Block parse_block(const char (&data)[Size], std::size_t &idx)
 {
     Block block{};
+    std::string_view sv{data};
 
     ++idx; // skip opening '['
     std::size_t start = idx;
-    std::string_view data{datatype};
 
-    while (idx < data.size() && data[idx] != ']')
+    while (idx < sv.size() && sv[idx] != ']')
     {
-        if (data[idx] == '\n')
+        if (sv[idx] == '\n')
         {
-            std::string_view line{data.data() + start, idx - start};
+            std::string_view line{sv.data() + start, idx - start};
             std::size_t ls = line.find_first_not_of(" \t");
             if (ls != std::string_view::npos)
             {
@@ -101,21 +121,21 @@ consteval Block parse_block(std::size_t &idx)
         ++idx;
     }
 
-    if (idx < data.size() && data[idx] == ']')
+    if (idx < sv.size() && sv[idx] == ']')
         ++idx; // advance past closing ']'
 
     return block;
 }
 
-template <std::size_t N> consteval auto parse(const std::string_view &data) -> std::array<Block, N>
+template <std::size_t N, std::size_t Size> consteval auto parse(const char (&data)[Size]) -> std::array<Block, N>
 {
     std::array<Block, N> output{};
     std::size_t block_idx{0};
 
-    for (std::size_t i = 0; i < data.size(); ++i)
+    for (std::size_t i = 0; i < Size; ++i)
     {
-        if (data.at(i) == '[')
-            output.at(block_idx++) = parse_block(i);
+        if (data[i] == '[')
+            output.at(block_idx++) = parse_block(data, i);
     }
 
     return output;
@@ -151,7 +171,8 @@ consteval std::meta::info sv_to_mi(std::string_view type)
 
 template <Block block> consteval std::meta::info block_to_mi()
 {
-    struct Temp;
+    struct Temp; // function-local, but define_aggregate registers it in the
+                 // global translation context, so ^^Temp stays valid after return.
 
     consteval
     {
@@ -189,6 +210,7 @@ template <typename T> constexpr void xray()
 
 int main()
 {
+    validate_brackets(datatype);
     constexpr auto n = count_block(datatype);
     constexpr auto blocks = parse<n>(datatype);
 
