@@ -1,8 +1,7 @@
-# cpp-reflection-stuff
+# cpp-codegen
 
-Single-file C++26 experiment exploring compile-time codegen via reflection
-(`std::meta`, `#embed`, consteval expansion statements, `define_aggregate`).
-A `.dt` data file is baked in at compile time and turned into synthesized C++ aggregate types.
+A C++26 experiment exploring compile-time codegen via reflections
+A `.dt` data file is baked in at compile time and turned into synthesized C++ aggregate types
 
 ## Requirements
 
@@ -49,15 +48,17 @@ block is `name: type`:
 
 ## How it works
 
-1. `NewType.dt` is embedded at compile time via `#embed`.
-2. Each `[ ... ]` block becomes a synthesized C++ aggregate type (one field per
-   `name: type` line, in order).
-3. Block 0 is instantiated as `T1` with `T1 t1{2, 2.0}` in `main`; every block
-   is x-rayed to print its field names.
+1. `NewType.dt` is embedded at compile time via `#embed`
+2. Each `[ ... ]` block becomes a synthesized C++ aggregate type; every block is x-rayed to print its field names
+
+
+## Type usage
+
+Block 0 is instantiated as `T1` with `T1 t1{2, 2.0}` in `main`
 
 ## Notes
 
 - A block caps at 16 fields (`MAX_BLOCK_FIELDS`); more causes a compile-time
-  `std::out_of_range`.
+  `std::out_of_range`
 - Editing `NewType.dt` requires recompiling
 
