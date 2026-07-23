@@ -79,13 +79,21 @@ consteval Block parse_block(std::size_t &idx)
             {
                 line.remove_prefix(ls);
                 std::size_t colon = line.find_first_of(':');
+                if (colon == std::string_view::npos)
+                    throw consteval_error("parse_block: missing ':' in line", line);
                 std::string_view name = line.substr(0, colon);
                 std::size_t name_end = name.find_last_not_of(" \t");
                 name = (name_end == std::string_view::npos) ? std::string_view{} : name.substr(0, name_end + 1);
+                if (name.empty())
+                    throw consteval_error("parse_block: field has no name", line);
                 std::size_t ts = line.find_first_not_of(" \t", colon + 1);
                 std::string_view type = (ts == std::string_view::npos) ? std::string_view{} : line.substr(ts);
                 std::size_t type_end = type.find_last_not_of(" \t");
                 type = (type_end == std::string_view::npos) ? std::string_view{} : type.substr(0, type_end + 1);
+                if (type.empty())
+                    throw consteval_error("parse_block: missing type name", name);
+                if (block.count >= MAX_BLOCK_FIELDS)
+                    throw consteval_error("parse_block: too many fields, bump MAX_BLOCK_FIELDS", name);
                 block.fields.at(block.count++) = {define_static_string(name), define_static_string(type)};
             }
             start = idx + 1;
